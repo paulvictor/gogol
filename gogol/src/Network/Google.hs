@@ -134,6 +134,7 @@ import Network.Google.Internal.Logger
 import Network.Google.Prelude
 import Network.Google.Types
 import Network.HTTP.Conduit           (newManager, tlsManagerSettings)
+import Network.HTTP.Types
 
 import qualified Control.Monad.Writer.Lazy   as LW
 import qualified Control.Monad.Writer.Strict as W
@@ -225,10 +226,10 @@ instance (Monoid w, MonadGoogle s m) => MonadGoogle s (LRW.RWST r w s' m) where
 -- | Send a request, returning the associated response if successful.
 --
 -- Throws 'Error'.
-send :: (MonadGoogle s m, HasScope s a, GoogleRequest a) => a -> m (Rs a)
-send x = liftGoogle $ do
+send :: (MonadGoogle s m, HasScope s a, GoogleRequest a) => RequestHeaders -> a -> m (Rs a)
+send additionalHeaders x = liftGoogle $ do
     e <- ask
-    r <- perform e x
+    r <- perform e additionalHeaders x
     hoistError r
 
 -- | Send a request returning the associated streaming media response if successful.
@@ -248,9 +249,10 @@ download :: ( MonadGoogle s m
             , HasScope    s (MediaDownload a)
             , GoogleRequest (MediaDownload a)
             )
-         => a
+         => RequestHeaders
+         -> a
          -> m (Rs (MediaDownload a))
-download = send . MediaDownload
+download additionalHeaders = send additionalHeaders . MediaDownload
 
 -- | Send a request with an attached <https://tools.ietf.org/html/rfc2387 multipart/related media> upload.
 --
@@ -265,10 +267,11 @@ upload :: ( MonadGoogle s m
           , HasScope    s (MediaUpload a)
           , GoogleRequest (MediaUpload a)
           )
-       => a
+       => RequestHeaders
+       -> a
        -> GBody
        -> m (Rs (MediaUpload a))
-upload x = send . MediaUpload x
+upload additionalHeaders x = send additionalHeaders . MediaUpload x
 
 hoistError :: MonadThrow m => Either Error a -> m a
 hoistError = either (throwingM _Error) return

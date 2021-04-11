@@ -48,9 +48,10 @@ import qualified Network.HTTP.Client.Conduit as Client
 
 perform :: (MonadCatch m, MonadResource m, AllowScopes s, GoogleRequest a)
         => Env s
+        -> RequestHeaders
         -> a
         -> m (Either Error (Rs a))
-perform Env{..} x = catches go handlers
+perform Env{..} additionalHeaders x = catches go handlers
   where
     Request       {..} = _cliRequest
     ServiceConfig {..} = _cliService
@@ -89,7 +90,7 @@ perform Env{..} x = catches go handlers
         , Client.method          = _cliMethod
         , Client.path            = path
         , Client.queryString     = renderQuery True (toList _rqQuery)
-        , Client.requestHeaders  = accept (ct (toList _rqHeaders))
+        , Client.requestHeaders  = accept (ct (toList _rqHeaders)) <> additionalHeaders
         , Client.requestBody     = b
         }
 
