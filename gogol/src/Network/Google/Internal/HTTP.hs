@@ -68,6 +68,8 @@ perform Env{..} additionalHeaders x = catches go handlers
 
         logDebug _envLogger rs -- debug:ClientResponse
 
+        liftIO (responseStatus rs)
+
         statusCheck rs
 
         r       <- _cliResponse (responseBody rs)

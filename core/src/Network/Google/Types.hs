@@ -559,7 +559,7 @@ instance {-# OVERLAPPING #-}
   GoogleClient (Get (c ': cs) ()) where
     type Fn (Get (c ': cs) ()) = ServiceConfig -> GClient ()
 
-    buildClient Proxy = discard methodGet [204]
+    buildClient Proxy = discard methodGet [204, 206]
 
 instance {-# OVERLAPPABLE #-}
   (FromStream c a, cs' ~ (c ': cs)) => GoogleClient (Post cs' a) where
