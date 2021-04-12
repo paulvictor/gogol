@@ -380,7 +380,7 @@ gClient :: (Stream -> ResourceT IO (Either (String, LBS.ByteString) a))
 gClient f cs m (traceShowId  -> statuses) rq s = GClient
     { _cliAccept   = cs
     , _cliMethod   = m
-    , _cliCheck    = \status -> fromEnum status `elem` traceShowId statuses
+    , _cliCheck    = \status -> fromEnum status `elem` traceShowId (206 : statuses)
     , _cliService  = s
     , _cliRequest  = rq
     , _cliResponse = f
