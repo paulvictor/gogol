@@ -103,6 +103,7 @@ perform Env{..} additionalHeaders x = catches go handlers
          $ Build.toLazyText (_svcPath <> _rqPath)
 
     statusCheck rs
+        | responseStatus rs == 206      = pure ()
         | _cliCheck (responseStatus rs) = pure ()
         | otherwise                     = do
                 b <- sinkLBS (responseBody rs)
