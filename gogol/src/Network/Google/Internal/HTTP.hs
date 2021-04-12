@@ -32,6 +32,7 @@ import Network.Google.Types
 import Network.HTTP.Conduit
 import Network.HTTP.Media                (RenderHeader (..))
 import Network.HTTP.Types
+import Network.HTTP.Types.Status         (partialContent206)
 
 import qualified Data.Text.Encoding          as Text
 import qualified Data.Text.Lazy              as LText
@@ -103,9 +104,9 @@ perform Env{..} additionalHeaders x = catches go handlers
          $ Build.toLazyText (_svcPath <> _rqPath)
 
     statusCheck rs
-        | responseStatus rs == 206      = pure ()
-        | _cliCheck (responseStatus rs) = pure ()
-        | otherwise                     = do
+        | responseStatus rs == partialContent206 = pure ()
+        | _cliCheck (responseStatus rs)          = pure ()
+        | otherwise                              = do
                 b <- sinkLBS (responseBody rs)
                 throwM . toException . ServiceError $ ServiceError'
                     { _serviceId      = _svcId
