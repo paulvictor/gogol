@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
@@ -376,7 +377,7 @@ gClient :: (Stream -> ResourceT IO (Either (String, LBS.ByteString) a))
        -> Request
        -> ServiceConfig
        -> GClient a
-gClient f cs m statuses rq s = GClient
+gClient f cs m (traceShowId  -> statuses) rq s = GClient
     { _cliAccept   = cs
     , _cliMethod   = m
     , _cliCheck    = \status -> fromEnum status `elem` traceShowId statuses
