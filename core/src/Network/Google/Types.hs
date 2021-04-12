@@ -59,6 +59,8 @@ import qualified Data.Text.Encoding       as Text
 import qualified Data.Text.Lazy.Builder   as Build
 import qualified Network.HTTP.Types       as HTTP
 
+import Debug.Trace
+
 data AltJSON   = AltJSON   deriving (Eq, Ord, Show, Read, Generic, Typeable)
 data AltMedia  = AltMedia  deriving (Eq, Ord, Show, Read, Generic, Typeable)
 data Multipart = Multipart deriving (Eq, Ord, Show, Read, Generic, Typeable)
@@ -377,7 +379,7 @@ gClient :: (Stream -> ResourceT IO (Either (String, LBS.ByteString) a))
 gClient f cs m statuses rq s = GClient
     { _cliAccept   = cs
     , _cliMethod   = m
-    , _cliCheck    = \status -> fromEnum status `elem` statuses
+    , _cliCheck    = \status -> fromEnum status `elem` traceShowId statuses
     , _cliService  = s
     , _cliRequest  = rq
     , _cliResponse = f
