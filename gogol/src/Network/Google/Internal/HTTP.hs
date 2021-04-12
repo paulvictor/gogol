@@ -37,6 +37,7 @@ import qualified Data.Text.Encoding          as Text
 import qualified Data.Text.Lazy              as LText
 import qualified Data.Text.Lazy.Builder      as Build
 import qualified Network.HTTP.Client.Conduit as Client
+import Control.Monad.IO.Class (liftIO)
 
 -- FIXME: "mediaType" param also comes/calculated from the request body?
 --
