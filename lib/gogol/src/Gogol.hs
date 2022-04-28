@@ -125,6 +125,7 @@ sendEither ::
     AllowRequest a scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs a))
 sendEither =
@@ -138,10 +139,11 @@ send ::
     AllowRequest a scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Rs a)
-send env =
-  sendEither env
+send env additionalHeaders =
+  sendEither env additionalHeaders
     >=> hoistEither
 
 -- | Send a request returning the associated streaming media response if successful.
@@ -160,10 +162,11 @@ downloadEither ::
     AllowRequest (MediaDownload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs (MediaDownload a)))
-downloadEither env =
-  sendEither env
+downloadEither env additionalHeaders =
+  sendEither env additionalHeaders
     . MediaDownload
 
 -- | Send a request returning the associated streaming media response if successful.
@@ -184,10 +187,11 @@ download ::
     AllowRequest (MediaDownload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Rs (MediaDownload a))
-download env =
-  downloadEither env
+download env additionalHeaders =
+  downloadEither env additionalHeaders
     >=> hoistEither
 
 -- | Send a request with an attached <https://tools.ietf.org/html/rfc2387 multipart/related media> upload.
@@ -221,11 +225,12 @@ uploadEither ::
     AllowRequest (MediaUpload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   GBody ->
   m (Either Error (Rs (MediaUpload a)))
-uploadEither env x =
-  sendEither env
+  uploadEither env additionalHeaders x =
+  sendEither env additionalHeaders
     . MediaUpload x
 
 -- | Send a request with an attached <https://tools.ietf.org/html/rfc2387 multipart/related media> upload.
@@ -242,11 +247,12 @@ upload ::
     AllowRequest (MediaUpload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   GBody ->
   m (Rs (MediaUpload a))
-upload env x =
-  uploadEither env x
+upload env additionalHeaders x =
+  uploadEither env additionalHeaders x
     >=> hoistEither
 
 hoistEither :: MonadIO m => Either Error a -> m a

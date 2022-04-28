@@ -32,6 +32,7 @@ import qualified Network.HTTP.Client.Conduit as Client
 import Network.HTTP.Conduit
 import Network.HTTP.Media (RenderHeader (..))
 import Network.HTTP.Types
+import Network.HTTP.Types.Status         (partialContent206)
 
 -- FIXME: "mediaType" param also comes/calculated from the request body?
 --
@@ -47,9 +48,10 @@ unsafeRequest ::
     KnownScopes scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs a))
-unsafeRequest Env {..} x =
+unsafeRequest Env {..} additionalHeaders x =
   liftResourceT (transResourceT (`catches` handlers) go)
   where
     Request {..} = _cliRequest
@@ -93,7 +95,7 @@ unsafeRequest Env {..} x =
           Client.method = _cliMethod,
           Client.path = path,
           Client.queryString = renderQuery True (toList _rqQuery),
-          Client.requestHeaders = accept (ct (toList _rqHeaders)),
+          Client.requestHeaders = accept (ct (toList _rqHeaders)) <> additionalHeaders,
           Client.requestBody = b
         }
 
@@ -107,6 +109,7 @@ unsafeRequest Env {..} x =
         $ Build.toLazyText (_svcPath <> _rqPath)
 
     statusCheck rs
+      | responseStatus rs == partialContent206 = pure ()
       | _cliCheck (responseStatus rs) = pure ()
       | otherwise = do
         b <- sinkLBS (responseBody rs)
