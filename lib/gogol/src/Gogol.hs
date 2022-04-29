@@ -118,6 +118,7 @@ import Gogol.Internal.Logger
 import Gogol.Prelude
 import Gogol.Types
 import Network.HTTP.Conduit (newManager, tlsManagerSettings)
+import Network.HTTP.Types(RequestHeaders)
 
 -- | Send a request, returning the associated response if successful.
 sendEither ::
@@ -125,6 +126,7 @@ sendEither ::
     AllowRequest a scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs a))
 sendEither =
@@ -138,10 +140,11 @@ send ::
     AllowRequest a scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Rs a)
-send env =
-  sendEither env
+send env requestHeaders =
+  sendEither env requestHeaders
     >=> hoistEither
 
 -- | Send a request returning the associated streaming media response if successful.
@@ -160,10 +163,11 @@ downloadEither ::
     AllowRequest (MediaDownload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs (MediaDownload a)))
-downloadEither env =
-  sendEither env
+downloadEither env requestHeaders =
+  sendEither env requestHeaders
     . MediaDownload
 
 -- | Send a request returning the associated streaming media response if successful.
@@ -184,10 +188,11 @@ download ::
     AllowRequest (MediaDownload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Rs (MediaDownload a))
-download env =
-  downloadEither env
+download env requestHeaders =
+  downloadEither env requestHeaders
     >=> hoistEither
 
 -- | Send a request with an attached <https://tools.ietf.org/html/rfc2387 multipart/related media> upload.
@@ -221,11 +226,12 @@ uploadEither ::
     AllowRequest (MediaUpload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   GBody ->
   m (Either Error (Rs (MediaUpload a)))
-uploadEither env x =
-  sendEither env
+uploadEither env requestHeaders x =
+  sendEither env requestHeaders
     . MediaUpload x
 
 -- | Send a request with an attached <https://tools.ietf.org/html/rfc2387 multipart/related media> upload.
@@ -242,11 +248,12 @@ upload ::
     AllowRequest (MediaUpload a) scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   GBody ->
   m (Rs (MediaUpload a))
-upload env x =
-  uploadEither env x
+upload env requestHeaders x =
+  uploadEither env requestHeaders x
     >=> hoistEither
 
 hoistEither :: MonadIO m => Either Error a -> m a

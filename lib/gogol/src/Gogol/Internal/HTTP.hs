@@ -47,9 +47,10 @@ unsafeRequest ::
     KnownScopes scopes
   ) =>
   Env scopes ->
+  RequestHeaders ->
   a ->
   m (Either Error (Rs a))
-unsafeRequest Env {..} x =
+unsafeRequest (Env {..}) additionalRequestHeaders x =
   liftResourceT (transResourceT (`catches` handlers) go)
   where
     Request {..} = _cliRequest
@@ -93,7 +94,7 @@ unsafeRequest Env {..} x =
           Client.method = _cliMethod,
           Client.path = path,
           Client.queryString = renderQuery True (toList _rqQuery),
-          Client.requestHeaders = accept (ct (toList _rqHeaders)),
+          Client.requestHeaders = accept (ct (toList _rqHeaders)) <> additionalRequestHeaders,
           Client.requestBody = b
         }
 
@@ -107,6 +108,7 @@ unsafeRequest Env {..} x =
         $ Build.toLazyText (_svcPath <> _rqPath)
 
     statusCheck rs
+      | responseStatus rs == partialContent206 = pure ()
       | _cliCheck (responseStatus rs) = pure ()
       | otherwise = do
         b <- sinkLBS (responseBody rs)
